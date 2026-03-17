@@ -93,6 +93,11 @@ public class FileController {
     public void uploadFile() {
         if (selectedFile == null) { statusLabel.setText("Please select a file first."); return; }
 
+        if (selectedFile.length() > 2097152) {
+            statusLabel.setText("File too large! Maximum size is 2MB.");
+            return;
+        }
+
         try {
             fileService.upload(selectedFile);
             statusLabel.setText("Uploaded: " + selectedFile.getName());

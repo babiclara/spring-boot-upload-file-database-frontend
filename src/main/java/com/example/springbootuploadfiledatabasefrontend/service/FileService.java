@@ -53,8 +53,7 @@ public class FileService {
         );
 
         if (response.statusCode() != 200) {
-            throw new RuntimeException("Upload failed: " + response.statusCode());
-        }
+            throw new RuntimeException(response.body());        }
 
         return response.body();
     }
