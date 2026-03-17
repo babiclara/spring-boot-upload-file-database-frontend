@@ -7,8 +7,8 @@ import java.nio.file.Files;
 public class MultipartBuilder {
 
     public static byte[] build(String boundary, File file) throws IOException {
-        String mime = Files.probeContentType(file.toPath());
-        if (mime == null) mime = "application/octet-stream";
+        String mime = java.net.URLConnection.guessContentTypeFromName(file.getName());
+        if (mime == null) mime = "application/idk";
 
         byte[] fileBytes = Files.readAllBytes(file.toPath());
         byte[] header = ("--" + boundary + "\r\n"

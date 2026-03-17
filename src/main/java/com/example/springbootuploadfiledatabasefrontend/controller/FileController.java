@@ -13,35 +13,16 @@ import java.util.Optional;
 
 public class FileController {
 
-    @FXML
-    private TableView<ResponseFile> fileTable;
-
-    @FXML
-    private TableColumn<ResponseFile, String> nameColumn;
-
-    @FXML
-    private TableColumn<ResponseFile, String> typeColumn;
-
-    @FXML
-    private TableColumn<ResponseFile, Long> sizeColumn;
-
-    @FXML
-    private TableColumn<ResponseFile, String> urlColumn;
-
-    @FXML
-    private Label statusLabel;
-
-    @FXML
-    private Label selectedFileLabel;
-
-    @FXML
-    private Button uploadButton;
-
-    @FXML
-    private Button updateButton;
-
-    @FXML
-    private Button deleteButton;
+    @FXML private TableView<ResponseFile> fileTable;
+    @FXML private TableColumn<ResponseFile, String> nameColumn;
+    @FXML private TableColumn<ResponseFile, String> typeColumn;
+    @FXML private TableColumn<ResponseFile, Long> sizeColumn;
+    @FXML private TableColumn<ResponseFile, String> urlColumn;
+    @FXML private Label statusLabel;
+    @FXML private Label selectedFileLabel;
+    @FXML private Button uploadButton;
+    @FXML private Button updateButton;
+    @FXML private Button deleteButton;
 
     private final FileService fileService = new FileService();
     private File selectedFile;
@@ -58,9 +39,8 @@ public class FileController {
         deleteButton.setDisable(true);
 
         fileTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            boolean noSelection = (newVal == null);
-            updateButton.setDisable(noSelection);
-            deleteButton.setDisable(noSelection);
+            updateButton.setDisable(newVal == null);
+            deleteButton.setDisable(newVal == null);
         });
 
         loadFiles();
@@ -79,25 +59,14 @@ public class FileController {
 
     @FXML
     public void chooseFile() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select File");
-        selectedFile = fileChooser.showOpenDialog(fileTable.getScene().getWindow());
-
-        if (selectedFile != null) {
-            selectedFileLabel.setText(selectedFile.getName());
-            uploadButton.setDisable(false);
-        } else {
-            selectedFileLabel.setText("No file selected");
-            uploadButton.setDisable(true);
-        }
+        selectedFile = new FileChooser().showOpenDialog(fileTable.getScene().getWindow());
+        selectedFileLabel.setText(selectedFile != null ? selectedFile.getName() : "No file selected");
+        uploadButton.setDisable(selectedFile == null);
     }
 
     @FXML
     public void uploadFile() {
-        if (selectedFile == null) {
-            statusLabel.setText("Please select a file first.");
-            return;
-        }
+        if (selectedFile == null) { statusLabel.setText("Please select a file first."); return; }
 
         try {
             fileService.upload(selectedFile);
@@ -114,20 +83,13 @@ public class FileController {
     @FXML
     public void updateFile() {
         ResponseFile selected = fileTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            statusLabel.setText("Select a row first.");
-            return;
-        }
+        if (selected == null) { statusLabel.setText("Select a row first."); return; }
 
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select replacement file");
-        File replacementFile = fileChooser.showOpenDialog(fileTable.getScene().getWindow());
-
-        if (replacementFile == null) return;
+        File replacement = new FileChooser().showOpenDialog(fileTable.getScene().getWindow());
+        if (replacement == null) return;
 
         try {
-            String id = extractIdFromUrl(selected.getUrl());
-            fileService.update(id, replacementFile);
+            fileService.update(extractId(selected.getUrl()), replacement);
             statusLabel.setText("Updated: " + selected.getName());
             loadFiles();
         } catch (Exception e) {
@@ -143,16 +105,12 @@ public class FileController {
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirm Delete");
-        confirm.setHeaderText("Are you sure you want to delete this record?");
-        confirm.setContentText(selected.getName());
-
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Delete " + selected.getName() + "?");
         Optional<ButtonType> result = confirm.showAndWait();
+
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                String id = extractIdFromUrl(selected.getUrl());
-                fileService.delete(id);
+                fileService.delete(extractId(selected.getUrl()));
                 statusLabel.setText("Deleted: " + selected.getName());
                 loadFiles();
             } catch (Exception e) {
@@ -161,7 +119,7 @@ public class FileController {
         }
     }
 
-    private String extractIdFromUrl(String url) {
+    private String extractId(String url) {
         return url.substring(url.lastIndexOf("/") + 1);
     }
 }
