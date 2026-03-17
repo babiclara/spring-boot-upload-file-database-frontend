@@ -1,26 +1,27 @@
 package com.example.springbootuploadfiledatabasefrontend.service;
 
 import com.example.springbootuploadfiledatabasefrontend.model.ResponseFile;
+import com.example.springbootuploadfiledatabasefrontend.utils.MultipartBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
+import java.io.File;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class FileService {
 
-    private static final String FILES_URL = "http://localhost:8080/files";
-
+    private static final String BASE = "http://localhost:8080";
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public List<ResponseFile> getAllFiles() throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(FILES_URL))
+                .uri(URI.create(BASE + "/files"))
                 .GET()
                 .build();
 
@@ -30,39 +31,69 @@ public class FileService {
         );
 
         if (response.statusCode() != 200) {
-            throw new RuntimeException("failed: " + response.statusCode());
+            throw new RuntimeException("GET failed: " + response.statusCode());
         }
 
         ResponseFile[] files = objectMapper.readValue(response.body(), ResponseFile[].class);
         return Arrays.asList(files);
     }
 
-    public byte[] getById(String id) throws Exception {
+    public String upload(File file) throws Exception {
+        String boundary = UUID.randomUUID().toString();
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(FILES_URL + "/" + id))
-                .GET()
+                .uri(URI.create(BASE + "/upload"))
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                .POST(HttpRequest.BodyPublishers.ofByteArray(MultipartBuilder.build(boundary, file)))
                 .build();
 
-        HttpResponse<byte[]> response =
-                httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+        HttpResponse<String> response = httpClient.send(
+                request,
+                HttpResponse.BodyHandlers.ofString()
+        );
 
         if (response.statusCode() != 200) {
-            throw new RuntimeException("failed: " + response.statusCode());
+            throw new RuntimeException("Upload failed: " + response.statusCode());
         }
 
         return response.body();
     }
 
-    public String create() throws IOException, InterruptedException {
+    public String update(String id, File file) throws Exception {
+        String boundary = UUID.randomUUID().toString();
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8080/upload"))
-                .POST(HttpRequest.BodyPublishers.noBody())
+                .uri(URI.create(BASE + "/update/files/" + id))
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                .PUT(HttpRequest.BodyPublishers.ofByteArray(MultipartBuilder.build(boundary, file)))
                 .build();
 
-        HttpResponse<String> response =
-                httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = httpClient.send(
+                request,
+                HttpResponse.BodyHandlers.ofString()
+        );
+
+        if (response.statusCode() != 200) {
+            throw new RuntimeException("Update failed: " + response.statusCode());
+        }
+
+        return response.body();
+    }
+
+    public String delete(String id) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/delete/files/" + id))
+                .DELETE()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(
+                request,
+                HttpResponse.BodyHandlers.ofString()
+        );
+
+        if (response.statusCode() != 200) {
+            throw new RuntimeException("Delete failed: " + response.statusCode());
+        }
 
         return response.body();
     }

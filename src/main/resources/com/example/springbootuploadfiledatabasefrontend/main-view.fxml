@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
@@ -15,9 +16,13 @@
         <Insets top="15" right="15" bottom="15" left="15"/>
     </padding>
 
-    <Label text="Uploaded Files"/>
+    <Label text="File Manager" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
 
-    <Button text="Refresh" onAction="#loadFiles"/>
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button text="Choose File" onAction="#chooseFile"/>
+        <Label fx:id="selectedFileLabel" text="No file selected"/>
+        <Button fx:id="uploadButton" text="Upload" onAction="#uploadFile"/>
+    </HBox>
 
     <TableView fx:id="fileTable">
         <columns>
@@ -27,4 +32,12 @@
             <TableColumn fx:id="urlColumn" text="URL" prefWidth="300"/>
         </columns>
     </TableView>
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button text="Refresh" onAction="#loadFiles"/>
+        <Button fx:id="updateButton" text="Update" onAction="#updateFile"/>
+        <Button fx:id="deleteButton" text="Delete" onAction="#deleteFile"/>
+    </HBox>
+
+    <Label fx:id="statusLabel" text="Ready." style="-fx-text-fill: gray;"/>
 </VBox>
