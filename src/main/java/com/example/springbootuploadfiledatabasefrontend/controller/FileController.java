@@ -5,6 +5,7 @@ import com.example.springbootuploadfiledatabasefrontend.service.FileService;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.FileChooser;
 
 import java.io.File;
@@ -33,6 +34,30 @@ public class FileController {
         typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
         sizeColumn.setCellValueFactory(new PropertyValueFactory<>("size"));
         urlColumn.setCellValueFactory(new PropertyValueFactory<>("url"));
+
+        nameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        nameColumn.setOnEditCommit(event -> {
+            ResponseFile file = event.getRowValue();
+            String newName = event.getNewValue().trim();
+
+            if (newName.isEmpty()) {
+                statusLabel.setText("Name cannot be blank.");
+                loadFiles();
+                return;
+            }
+
+            try {
+                String id = extractId(file.getUrl());
+                fileService.update(id, null, newName);
+                statusLabel.setText("Renamed to: " + newName);
+                loadFiles();
+            } catch (Exception e) {
+                statusLabel.setText("Rename error: " + e.getMessage());
+                loadFiles();
+            }
+        });
+
+        fileTable.setEditable(true);
 
         uploadButton.setDisable(true);
         updateButton.setDisable(true);
@@ -89,7 +114,8 @@ public class FileController {
         if (replacement == null) return;
 
         try {
-            fileService.update(extractId(selected.getUrl()), replacement);
+            String id = extractId(selected.getUrl());
+            fileService.update(id, replacement, null);
             statusLabel.setText("Updated: " + selected.getName());
             loadFiles();
         } catch (Exception e) {
@@ -100,10 +126,7 @@ public class FileController {
     @FXML
     public void deleteFile() {
         ResponseFile selected = fileTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            statusLabel.setText("Select a row first.");
-            return;
-        }
+        if (selected == null) { statusLabel.setText("Select a row first."); return; }
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Delete " + selected.getName() + "?");
         Optional<ButtonType> result = confirm.showAndWait();

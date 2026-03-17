@@ -44,7 +44,7 @@ public class FileService {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/upload"))
                 .header("Content-Type", "multipart/form-data; boundary=" + boundary)
-                .POST(HttpRequest.BodyPublishers.ofByteArray(MultipartBuilder.build(boundary, file)))
+                .POST(HttpRequest.BodyPublishers.ofByteArray(MultipartBuilder.build(boundary, file, null)))
                 .build();
 
         HttpResponse<String> response = httpClient.send(
@@ -59,13 +59,13 @@ public class FileService {
         return response.body();
     }
 
-    public String update(String id, File file) throws Exception {
+    public String update(String id, File file, String name) throws Exception {
         String boundary = UUID.randomUUID().toString();
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/update/files/" + id))
                 .header("Content-Type", "multipart/form-data; boundary=" + boundary)
-                .PUT(HttpRequest.BodyPublishers.ofByteArray(MultipartBuilder.build(boundary, file)))
+                .PUT(HttpRequest.BodyPublishers.ofByteArray(MultipartBuilder.build(boundary, file, name)))
                 .build();
 
         HttpResponse<String> response = httpClient.send(
