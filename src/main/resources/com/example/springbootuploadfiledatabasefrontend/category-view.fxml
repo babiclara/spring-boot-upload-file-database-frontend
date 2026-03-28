@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.springbootuploadfiledatabasefrontend.controller.FileCategoryController"
+      spacing="10">
+
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15"/>
+    </padding>
+
+    <Label text="File Categories" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Name:"/>
+        <TextField fx:id="nameField" promptText="Category name" prefWidth="180"/>
+        <Label text="Description:"/>
+        <TextField fx:id="descriptionField" promptText="Description" prefWidth="250"/>
+        <Button text="Save" onAction="#saveCategory"/>
+    </HBox>
+
+    <TableView fx:id="categoryTable" prefHeight="300">
+        <columns>
+            <TableColumn fx:id="idColumn" text="ID" prefWidth="60"/>
+            <TableColumn fx:id="nameColumn" text="Name" prefWidth="200"/>
+            <TableColumn fx:id="descriptionColumn" text="Description" prefWidth="350"/>
+        </columns>
+    </TableView>
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button text="Refresh" onAction="#loadCategories"/>
+    </HBox>
+
+    <Label text="Right-click a row to Update or Delete." style="-fx-text-fill: gray; -fx-font-style: italic;"/>
+    <Label fx:id="statusLabel" text="Ready." style="-fx-text-fill: gray;"/>
+</VBox>
